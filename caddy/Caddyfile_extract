@@ -1,0 +1,18 @@
+{
+    admin off
+}
+
+:8002 {
+    bind 127.0.0.1
+    root * .
+
+    log {
+        output file caddy/access_extract.log
+    }
+
+    header Cache-Control "no-store"
+    header Pragma "no-cache"
+    header Expires "0"
+
+    file_server
+}

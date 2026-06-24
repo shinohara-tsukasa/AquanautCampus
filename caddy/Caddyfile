@@ -1,0 +1,22 @@
+{ 
+	# local launcher: keep defaults simple
+	# admin is fine (localhost only) but not needed
+	# admin off
+}
+
+:8122 {
+	bind 127.0.0.1
+
+	root * .
+
+	# access log for idle watch
+	log {
+		output file caddy/access.log
+	}
+
+	# prevent caching for ping file (extra safety)
+	@ping path /sys/ping.txt
+	header @ping Cache-Control "no-store"
+
+	file_server
+}

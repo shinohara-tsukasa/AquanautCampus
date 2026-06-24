@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>立ち絵SWF単体テスト</title>
+<script>
+// preserveDrawingBuffer（freeze用）
+var _orig = HTMLCanvasElement.prototype.getContext;
+HTMLCanvasElement.prototype.getContext = function(t,a){
+    if(t==="webgl"||t==="webgl2"){a=a||{};a.preserveDrawingBuffer=true;}
+    return _orig.call(this,t,a);
+};
+window.RufflePlayer = window.RufflePlayer || {};
+window.RufflePlayer.config = {
+    autoplay:"on", unmuteOverlay:"hidden", splashScreen:false,
+    preloader:false, backgroundColor:"#00000000",
+    warnOnUnsupportedContent:false, logLevel:"error",
+    wmode:"transparent"
+};
+</script>
+<script src="../ruffle/ruffle.js"></script>
+<style>
+body { background:#333; color:#eee; font:13px monospace; padding:20px; }
+#stage { position:relative; width:512px; height:360px; background:url('../swf/extracted_jpeg/char067.jpg') no-repeat; background-size:512px 360px; }
+#player-wrap { position:absolute; top:0; left:0; width:512px; height:360px; }
+#controls { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+button { padding:6px 12px; cursor:pointer; font-size:13px; }
+button.active { background:#4a9; color:#000; }
+#log { margin-top:10px; white-space:pre-wrap; max-height:200px; overflow-y:auto; background:#111; padding:8px; font-size:11px; }
+</style>
+</head>
+<body>
+<h2>立ち絵SWF単体テスト（F0-199）</h2>
+<p>背景はchar067.jpg固定。SWFをwmode:transparentで重ねて表示。明滅するかチェック。</p>
+
+<div id="stage">
+    <div id="player-wrap"></div>
+</div>
+
+<div id="controls">
+    <button onclick="load(16)">F0016（立ち絵なし）</button>
+    <button onclick="load(17)">F0017（さやかシーン1）</button>
+    <button onclick="load(18)">F0018（さやかシーン2）</button>
+    <button onclick="load(19)">F0019（さやかシーン3）</button>
+    <button onclick="load(2)">F0002（凪・正常）</button>
+    <button onclick="load(3)">F0003（凪・正常）</button>
+    <button id="btn-loop" onclick="toggleLoop()">▶ 連続切替（16→17→18→19）</button>
+</div>
+
+<div id="log">待機中...</div>
+
+<script>
+var PLAYER = null;
+var loopTimer = null;
+var loopFrames = [16,17,18,19];
+var loopIdx = 0;
+
+function log(s){
+    var el=document.getElementById('log');
+    el.textContent += new Date().toISOString().substr(11,12)+' '+s+'\n';
+    el.scrollTop=el.scrollHeight;
+}
+
+async function initPlayer(){
+    var ruffle = window.RufflePlayer.newest();
+    PLAYER = ruffle.createPlayer();
+    PLAYER.style.cssText = "width:512px;height:360px;position:absolute;top:0;left:0;";
+    document.getElementById('player-wrap').appendChild(PLAYER);
+    log('Player initialized');
+}
+
+async function load(num){
+    if(!PLAYER) await initPlayer();
+    var pad = String(num); while(pad.length<4) pad='0'+pad;
+    var url = '../swf/split_game/game_F'+pad+'.swf';
+    log('load: '+url);
+    try{
+        await PLAYER.load({url:url, autoplay:true, loop:false});
+        log('loaded: F'+pad);
+    }catch(e){log('ERROR: '+e);}
+}
+
+function toggleLoop(){
+    var btn = document.getElementById('btn-loop');
+    if(loopTimer){
+        clearInterval(loopTimer);
+        loopTimer=null;
+        btn.textContent='▶ 連続切替（16→17→18→19）';
+        btn.classList.remove('active');
+    } else {
+        loopIdx=0;
+        loopTimer=setInterval(function(){
+            load(loopFrames[loopIdx]);
+            loopIdx=(loopIdx+1)%loopFrames.length;
+        }, 800);
+        btn.textContent='⏹ 停止';
+        btn.classList.add('active');
+    }
+}
+
+window.addEventListener('load', initPlayer);
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<script language="JavaScript">
+attachEvent("onmouseover",mouseover);
+attachEvent("onmouseout",mouseout);
+function mouseover()
+	{
+	this.style.border="1px solid white";
+	this.style.color="#ffff00";
+	}
+function mouseout()
+	{
+	this.style.border="1px solid black";
+	this.style.color="#ffffff";
+	}
+</script>
+

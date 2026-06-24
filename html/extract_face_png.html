@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Face SWF → PNG 抽出</title>
+<script>
+// ★ WebGL preserveDrawingBuffer 強制 — Ruffle読込前に設定
+var _origGetContext = HTMLCanvasElement.prototype.getContext;
+HTMLCanvasElement.prototype.getContext = function(type, attrs) {
+    if (type === "webgl" || type === "webgl2") {
+        attrs = attrs || {};
+        attrs.preserveDrawingBuffer = true;
+    }
+    return _origGetContext.call(this, type, attrs);
+};
+</script>
+<script>
+window.RufflePlayer = window.RufflePlayer || {};
+window.RufflePlayer.config = {
+    autoplay: "on", unmuteOverlay: "hidden", splashScreen: false,
+    preloader: false, backgroundColor: "#000000",
+    warnOnUnsupportedContent: false, logLevel: "error"
+};
+</script>
+<script src="../ruffle/ruffle.js"></script>
+<style>
+body { background:#222; color:#0f0; font:14px monospace; padding:20px; }
+#log { white-space:pre-wrap; max-height:600px; overflow-y:auto; }
+</style>
+</head>
+<body>
+<h2>Face SWF → PNG 抽出</h2>
+<button onclick="run()">開始</button>
+<div id="log">待機中</div>
+<script>
+var L=document.getElementById("log");
+function log(s){L.textContent+=s+"\n";L.scrollTop=L.scrollHeight;}
+
+async function run(){
+    L.textContent="";
+    var dir;
+    try{dir=await window.showDirectoryPicker({mode:"readwrite"});}catch(e){return;}
+    log("保存先: "+dir.name+"/");
+
+    var rf=window.RufflePlayer.newest();
+    var ok=0,total=105;
+
+    for(var i=0;i<total;i++){
+        var pad=String(i);while(pad.length<3)pad="0"+pad;
+        var fn="face_"+pad+".png";
+
+        var p=rf.createPlayer();
+        p.style.cssText="width:100px;height:100px;position:fixed;top:0;left:0;";
+        document.body.appendChild(p);
+        try{await p.load({url:"../swf/split_face/face_F"+pad+".swf",autoplay:true});}catch(e){}
+        await new Promise(r=>setTimeout(r,800));
+
+        var c=p.shadowRoot&&p.shadowRoot.querySelector("canvas");
+        if(c){
+            try{
+                // Y反転して100x100で保存
+                var o=document.createElement("canvas");o.width=100;o.height=100;
+                var ctx=o.getContext("2d");
+                ctx.translate(0,100);ctx.scale(1,-1);
+                ctx.drawImage(c,0,0,100,100);
+                var blob=await new Promise(r=>o.toBlob(r,"image/png"));
+                var fh=await dir.getFileHandle(fn,{create:true});
+                var w=await fh.createWritable();await w.write(blob);await w.close();
+                ok++;log("OK "+fn+" ("+blob.size+"B)");
+            }catch(e){log("ERR "+fn+": "+e.message);}
+        }else{log("SKIP "+fn);}
+        p.remove();
+    }
+    log("\n完了 "+ok+"/"+total);
+}
+</script>
+</body>
+</html>

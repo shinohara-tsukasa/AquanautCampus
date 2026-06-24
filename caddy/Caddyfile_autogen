@@ -1,0 +1,21 @@
+{
+    admin off
+}
+
+:8001 {
+    bind 127.0.0.1
+    root * .
+
+    log {
+        output file caddy/access.log
+    }
+
+    @nocache {
+        path /html/*.html /html/ping.txt
+    }
+    header @nocache Cache-Control "no-store"
+    header @nocache Pragma "no-cache"
+    header @nocache Expires "0"
+
+    file_server
+}

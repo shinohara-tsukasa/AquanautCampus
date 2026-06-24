@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>アクアノートキャンパス</title>
+<style>
+/* === default.css IE互換除去版 (Step 2) === */
+body {
+    background-color: #000000;
+    color: #000000;
+    cursor: default;
+    overflow: hidden;
+    margin: 0 auto; padding: 0;
+    width: 640px;
+    height: 480px;
+    position: relative;
+}
+div { position: absolute; }
+td.btn {
+    font-family: Arial Black;
+    font-size: 16px;
+    text-align: center;
+    text-shadow: 1px 1px 2px #442222;
+    color: #330000;
+    cursor: pointer;
+}
+td.btn:hover { color: #ff6600; }
+td.sel {
+    font-size: 16px; font-weight: bold;
+    font-family: "MS PGothic", sans-serif;
+    width: 150px; color: #ffffff;
+    cursor: pointer; white-space: nowrap;
+}
+td.sel:hover { color: #ffff00; }
+td.rsel {
+    font-size: 16px; font-weight: bold;
+    font-family: "MS PGothic", sans-serif;
+    color: #ffffff; white-space: nowrap;
+}
+td.nosel {
+    font-size: 16px; font-weight: bold;
+    font-family: "MS PGothic", sans-serif;
+    width: 150px; color: #888888;
+    cursor: pointer; white-space: nowrap;
+}
+td.selx, span.selx {
+    font-size: 16px; font-weight: bold;
+    font-family: "MS PGothic", sans-serif;
+    cursor: pointer;
+}
+td.selx:hover, span.selx:hover { color: #ffff00; }
+td.pal {
+    font-size: 16px; font-weight: bold;
+    font-family: "MS PGothic", sans-serif;
+    background-color: #66ffff; color: #000000;
+    width: 48px; text-align: center;
+}
+td.pal2 {
+    font-size: 16px; font-weight: bold;
+    font-family: "MS PGothic", sans-serif;
+    background-color: #000044; color: #ffffff;
+    width: 60px; text-align: right;
+}
+td.cfg {
+    font-size: 16px; font-weight: bold;
+    font-family: "MS PGothic", sans-serif;
+    color: #ffffff; cursor: pointer;
+    white-space: nowrap;
+    text-shadow: 0 0 2px #000000;
+}
+td.cfg:hover { color: #ffff00; }
+td.cfg2 {
+    font-size: 16px; font-weight: bold;
+    font-family: "MS PGothic", sans-serif;
+    color: #ffffff; width: 340px;
+    white-space: nowrap;
+    text-shadow: 0 0 1px #000000;
+}
+span.cfg3 {
+    cursor: pointer;
+    border: 1px solid black;
+}
+span.cfg3:hover { background: #444; }
+span.text {
+    color: #000000;
+    font-family: "MS PGothic", sans-serif;
+    font-weight: bold; line-height: 22px;
+    font-size: 16px;
+    text-shadow: 0 0 2px #ffffff;
+}
+td.sub {
+    color: #000000;
+    font-family: "MS PGothic", sans-serif;
+    font-weight: bold; line-height: 23px;
+    font-size: 16px;
+    text-shadow: 0 0 2px #ffffff;
+}
+td.kid {
+    color: #ffffff; font-family: "MS PGothic", sans-serif;
+    font-weight: bold; font-size: 16px;
+    text-align: right; white-space: nowrap;
+}
+td.kidh {
+    color: #ffffff; font-family: "MS PGothic", sans-serif;
+    font-weight: bold; font-size: 16px;
+    text-align: left; white-space: nowrap;
+}
+td.kidc {
+    color: #ffffff; font-family: "MS PGothic", sans-serif;
+    font-weight: bold; font-size: 16px;
+    text-align: center; white-space: nowrap;
+}
+td.kidcomp {
+    color: #000000; background-color: #ffffcc;
+    font-family: "MS PGothic", sans-serif;
+    font-weight: bold; font-size: 16px;
+    text-align: center; white-space: nowrap;
+}
+/* user-select none (onselectstart代替) */
+body { user-select: none; -webkit-user-select: none; }
+</style>
+
+<!-- JS読込順序: データ → 低レベル → 高レベル → SLG → 統合 -->
+<script src="../swf/split_game/_frame_to_file.js?v=20260408c"></script>
+<script src="files.js?v=20260408c"></script>
+<script src="music.js?v=20260408c"></script>
+<script src="karnel.js?v=20260408b"></script>
+<script src="sys.js?v=20260408t42"></script>
+<script src="schedule.js?v=20260408v"></script>
+<script>
+// Ruffle設定: スプラッシュ非表示、自動再生、黒背景
+window.RufflePlayer = window.RufflePlayer || {};
+window.RufflePlayer.config = {
+	autoplay: "on",
+	unmuteOverlay: "hidden",
+	splashScreen: false,
+	preloader: false,
+	backgroundColor: "#00000000",
+	wmode: "transparent",
+	scaleMode: "exactFit",
+	forceScale: true,
+	letterbox: "off",
+	warnOnUnsupportedContent: false,
+	logLevel: "error"
+};
+</script>
+<script src="../ruffle/ruffle.js"></script>
+<script src="ruffle_core.js?v=20260408z201"></script>
+</head>
+
+<body bgcolor="black">
+
+<div id="BODY_BG" style="top:0;left:0;z-index:-1;width:640px;height:480px;background:url('bg.jpg') no-repeat 0 0"></div>
+
+<!-- Audio Unlock UI -->
+<div id="AUDIO_UNLOCK" style="top:0;left:0;z-index:100;width:640px;height:480px;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center">
+<div style="position:static;width:600px;color:white;font-size:24px;font-family:'MS PGothic',sans-serif;text-align:center;cursor:pointer;transform:translateY(-60px)" onclick="document.getElementById('AUDIO_UNLOCK').style.display='none'">
+クリックして開始<br><span style="font-size:14px">Click to Start</span>
+<div style="font-size:13px;margin:14px 0 0;line-height:1.7;color:#cde3f0;font-weight:normal;text-align:left;white-space:nowrap;padding-left:7em">旧型パソコン（4〜6コアなど）で立ち絵が点滅する場合は、<br>設定（CONFIG）の「動作モード」を「軽量」に変更してください。<br>逆に、高性能パソコンで立ち絵が点滅する場合は「標準」に変更してください。<br><span style="font-size:12px;color:#9fbccf">※パソコンの処理能力に応じて処理を分けています。</span></div>
+</div>
+</div>
+
+<!-- RAY1: メイン画面 (game.swf → Ruffle) -->
+<div id="RAY1" style="top:0px;left:0px;z-index:0">
+<div id="MAINW" style="width:512px;height:360px;background:transparent;position:relative">
+<!-- Ruffle player がここに挿入される -->
+</div>
+</div>
+
+<!-- RAY1b: 黒半透明オーバーレイ -->
+<div id="RAY1b" style="top:0px;left:0px;z-index:1;opacity:0.5;visibility:hidden" onclick="klik()" ondblclick="double()">
+<img src="black.gif" width="512" height="360"></div>
+
+<!-- RAY1c: 透明クリック受け -->
+<div id="RAY1c" style="top:0px;left:0px;z-index:2" onclick="klik()" ondblclick="double()">
+<img src="blank.gif" width="512" height="360"></div>
+
+<!-- RAY2A: 顔グラフィック＋テキスト背景 -->
+<div id="RAY2A" style="top:366px;left:0px;z-index:3" onclick="klik()" ondblclick="double()">
+<table width="618" height="106" border="2" cellpadding="0" cellspacing="0"><tr>
+<td width="80">
+<div id="FACEW" style="width:100px;height:100px;background:transparent;position:relative">
+<!-- Ruffle face player がここに挿入される -->
+</div>
+</td>
+<td width="424"><img src="white.gif" width="518" height="100" style="opacity:0.6"></td>
+</tr></table>
+</div>
+
+<!-- RAY2B: テキスト表示欄 -->
+<div id="RAY2B" style="top:370px;left:110px;z-index:4" onclick="klik()" ondblclick="double()">
+<table width="504" height="96" border="0" cellpadding="0"><tr>
+<td class="sub">
+<span id="TEXT"></span>
+</td></tr></table>
+</div>
+
+<!-- RAY2C: 顔クリック受け -->
+<div id="RAY2C" style="top:368px;left:2px;z-index:4;opacity:0.4" onclick="klik()" ondblclick="double()">
+<img src="blank.gif" width="100" height="100"></div>
+
+<!-- RAY3A: ロゴ＋著作権 -->
+<div id="RAY3A" style="top:0px;left:475px;z-index:1;font-size:11px;font-weight:bold;font-family:Arial;color:white;width:160px;text-align:right">
+<img src="logo1.gif" alt="アクアノートキャンパス"><br>(c)Pleiades Company<br>2002-2007.</div>
+
+<!-- RAY3B: 日付/TIME表示 -->
+<div id="RAY3B" style="top:128px;left:527px;z-index:1;visibility:hidden">
+<table border="1" background="kolk.jpg" cellpadding="4" width="100">
+<tr><td align="center" style="text-shadow:1px 1px 4px #442222">
+<span id="DATE" style="font-family:Verdana;color:#330000;font-size:28px;font-weight:bold"></span><br>
+<span id="TIME" style="font-family:'MS PGothic',sans-serif;color:#330000;font-size:24px"></span>
+</td></tr></table>
+</div>
+
+<!-- RAY3C: ゲーム中メニューボタン -->
+<div id="RAY3C" style="top:206px;left:527px;z-index:6;visibility:hidden">
+<table border="2" cellpadding="0" cellspacing="0" background="kolk.jpg" width="100">
+<tr><td class="btn" onclick="keyin(109)" title="操作説明を表示します">HELP</td></tr>
+<tr><td class="btn" onclick="PF1()" title="次の選択肢までスキップします">SKIP</td></tr>
+<tr><td class="btn" onclick="PF3()" title="セーブした場所から再開します">LOAD</td></tr>
+<tr><td class="btn" onclick="PF4()" title="環境設定画面を出します">CONFIG</td></tr>
+<tr><td class="btn" onclick="PF5()" title="文章を読み返します">REWIND</td></tr>
+<tr><td class="btn" onclick="PF6()" title="タイトル画面に戻ります">EXIT</td></tr>
+</table></div>
+
+<!-- RAY3D: タイトル時HELPのみ -->
+<div id="RAY3D" style="top:206px;left:527px;z-index:6;visibility:visible">
+<table border="2" cellpadding="0" cellspacing="0" background="kolk.jpg" width="100">
+<tr><td class="btn" onclick="keyin(109)" title="操作説明を表示します">HELP</td></tr>
+</table></div>
+
+<!-- RAY3E: HELP+EXIT -->
+<div id="RAY3E" style="top:206px;left:527px;z-index:6;visibility:visible">
+<table border="2" cellpadding="0" cellspacing="0" background="kolk.jpg" width="100">
+<tr><td class="btn" onclick="keyin(109)" title="操作説明を表示します">HELP</td></tr>
+<tr><td class="btn" onclick="Quit()" title="ゲームを終了します">EXIT</td></tr>
+</table></div>
+
+<!-- bgsound削除済み（HTML5 Audio化: Step 3） -->
+<div id="RAY4N" style="position:absolute;top:-500px;left:0px"></div>
+
+<!-- MUSICCTRL: 音楽鑑賞モードボタン -->
+<div id="MUSICCTRL" style="position:absolute;top:306px;left:290px;z-index:15;visibility:hidden">
+<table border="0" cellpadding="4" cellspacing="0">
+<tr>
+<td><img src="blank.gif" width="32" height="35" style="cursor:pointer" onclick="omake2prev()"></td>
+<td><img src="blank.gif" width="32" height="35" style="cursor:pointer" onclick="omake2play()"></td>
+<td><img src="blank.gif" width="32" height="35" style="cursor:pointer" onclick="omake2stop()"></td>
+<td><img src="blank.gif" width="32" height="35" style="cursor:pointer" onclick="omake2next()"></td>
+<td><img src="blank.gif" width="40" height="35" style="cursor:pointer" onclick="omake2exit()"></td>
+</tr>
+</table>
+</div>
+
+<!-- SE embed削除済み（HTML5 Audio化: Step 4） -->
+
+<!-- SAVEWIN: セーブスロット選択 -->
+<div id="SAVEWIN" style="top:370px;left:112px;z-index:4;visibility:hidden">
+<table width="390" height="64" border="0" cellpadding="0"><tr>
+<td class="sub" style="line-height:32px">
+セーブする番号を選んでください：<br>
+<span class="selx" onclick="PF2go(1)" onmouseover="PF2on(1)" onmouseout="PF2of()">[1]</span>　
+<span class="selx" onclick="PF2go(2)" onmouseover="PF2on(2)" onmouseout="PF2of()">[2]</span>　
+<span class="selx" onclick="PF2go(3)" onmouseover="PF2on(3)" onmouseout="PF2of()">[3]</span>　
+<span class="selx" onclick="PF2go(4)" onmouseover="PF2on(4)" onmouseout="PF2of()">[4]</span>　
+<span class="selx" onclick="PF2go(5)" onmouseover="PF2on(5)" onmouseout="PF2of()">[5]</span>　
+<span class="selx" onclick="PF2go(6)" onmouseover="PF2on(6)" onmouseout="PF2of()">[6]</span>　
+<span class="selx" onclick="PF2go(7)" onmouseover="PF2on(7)" onmouseout="PF2of()">[7]</span>　
+<span class="selx" onclick="PF2go(8)" onmouseover="PF2on(8)" onmouseout="PF2of()">[8]</span>　
+<br><span class="selx" onclick="PF2off()">０：セーブしない</span>
+</td></tr></table>
+</div>
+
+<!-- LOADWIN: ロードスロット選択 -->
+<div id="LOADWIN" style="top:370px;left:112px;z-index:4;visibility:hidden">
+<table width="480" height="64" border="0" cellpadding="0"><tr>
+<td class="sub" style="line-height:32px">
+ロードする番号を選んでください：<br>
+<span class="selx" onclick="PF3go(1)" onmouseover="PF2on(1)" onmouseout="PF2of()">[1]</span>　
+<span class="selx" onclick="PF3go(2)" onmouseover="PF2on(2)" onmouseout="PF2of()">[2]</span>　
+<span class="selx" onclick="PF3go(3)" onmouseover="PF2on(3)" onmouseout="PF2of()">[3]</span>　
+<span class="selx" onclick="PF3go(4)" onmouseover="PF2on(4)" onmouseout="PF2of()">[4]</span>　
+<span class="selx" onclick="PF3go(5)" onmouseover="PF2on(5)" onmouseout="PF2of()">[5]</span>　
+<span class="selx" onclick="PF3go(6)" onmouseover="PF2on(6)" onmouseout="PF2of()">[6]</span>　
+<span class="selx" onclick="PF3go(7)" onmouseover="PF2on(7)" onmouseout="PF2of()">[7]</span>　
+<span class="selx" onclick="PF3go(8)" onmouseover="PF2on(8)" onmouseout="PF2of()">[8]</span>　
+<span class="selx" onclick="PF3go(9)" onmouseover="PF2on(9)" onmouseout="PF2of()">[9(AUTO)]</span>　
+<br><span class="selx" onclick="PF3off()">０：ロードしない</span>
+</td></tr></table>
+</div>
+
+<!-- HISTWIN: 読み返し -->
+<div id="HISTWIN" style="top:0px;left:0px;visibility:hidden;z-index:10;width:512px;height:350px;overflow-y:scroll;overflow-x:hidden;padding:8px;line-height:23px;font-weight:bold"></div>
+
+<!-- SUBMSG: サブメッセージ -->
+<div id="SUBMSG" style="top:370px;left:112px;z-index:4;visibility:hidden"></div>
+
+<!-- CONFIGWIN: 環境設定 -->
+<div id="CONFIGWIN" style="top:0px;left:0px;z-index:10;width:512px;height:350px;overflow:hidden;visibility:hidden">
+<table border="0" width="100%" height="100%"><tr>
+<td valign="middle" align="center">
+<table width="480" cellspacing="0" border="0" cellpadding="4"><tr>
+<td colspan="2" align="center" style="font-size:24px;color:#00ffff;text-shadow:0 0 2px #000000">環境設定</td>
+</tr>
+<tr><td class="cfg" onclick="keyin(97)" ondblclick="keyin(97)">ＢＧＭ選択(1)</td>
+<td class="cfg2">
+<span class="cfg3" id="cf11" onclick="PF4move(0)">自動　</span>
+<span class="cfg3" id="cf12" style="display:none" onclick="PF4move(1)">ＷＭＡ</span>
+<span class="cfg3" id="cf13" style="display:none" onclick="PF4move(19)">MIDI</span>
+<span class="cfg3" id="cf14" onclick="PF4move(20)">無し　</span>
+</td></tr>
+<tr><td class="cfg" onclick="keyin(98)" ondblclick="keyin(98)">効果音再生(2)</td>
+<td class="cfg2">
+<span class="cfg3" id="cf21" onclick="PF4move(2)">有り　</span>
+<span class="cfg3" id="cf22" onclick="PF4move(3)">無し　</span>
+</td></tr>
+<tr><td class="cfg" onclick="keyin(99)" ondblclick="keyin(99)">スキップ機能(3)</td>
+<td class="cfg2">
+<span class="cfg3" id="cf31" onclick="PF4move(4)">選択肢まで　</span>
+<span class="cfg3" id="cf32" onclick="PF4move(5)">分岐点まで　</span>
+<span class="cfg3" id="cf33" onclick="PF4move(6)">既読のみ　</span>
+</td></tr>
+<tr><td class="cfg" onclick="keyin(100)" ondblclick="keyin(100)">選択肢の色(4)</td>
+<td class="cfg2">
+<span class="cfg3" id="cf41" onclick="PF4move(7)">通過済み着色　</span>
+<span class="cfg3" id="cf42" onclick="PF4move(8)">着色なし　</span>
+</td></tr>
+<tr><td class="cfg" onclick="keyin(101)">画面切替演出(5)</td>
+<td class="cfg2">
+<span class="cfg3" id="cf51" onclick="PF4move(9)" ondblclick="keyin(101)">アニメ有り　</span>
+<span class="cfg3" id="cf52" onclick="PF4move(10)">アニメ無し　</span>
+</td></tr>
+<tr><td class="cfg" onclick="keyin(102)" ondblclick="keyin(102)">右クリック機能(6)</td>
+<td class="cfg2">
+<span class="cfg3" id="cf61" onclick="PF4move(11)">読み返し　</span>
+<span class="cfg3" id="cf62" onclick="PF4move(12)">スキップ　</span>
+<span class="cfg3" id="cf63" onclick="PF4move(13)">拡大　</span>
+</td></tr>
+<tr><td class="cfg" onclick="keyin(103)" ondblclick="keyin(103)">オートプレイ速度(7)</td>
+<td class="cfg2">
+<span class="cfg3" id="cf71" onclick="PF4move(14)">なし　</span>
+<span class="cfg3" id="cf72" onclick="PF4move(15)">通常　</span>
+<span class="cfg3" id="cf73" onclick="PF4move(16)">高速　</span>
+</td></tr>
+<tr><td class="cfg" onclick="keyin(104)" ondblclick="keyin(104)">振動エフェクト(8)</td>
+<td class="cfg2">
+<span class="cfg3" id="cf81" onclick="PF4move(17)">有り　</span>
+<span class="cfg3" id="cf82" onclick="PF4move(18)">なし　</span>
+</td></tr>
+<tr><td class="cfg" onclick="checker()">既読数</td>
+<td class="cfg2"><span id="ALREADY"></span>(<span id="RATE"></span>)</td></tr>
+</table>
+<table width="480" border="1" cellpadding="4" cellspacing="0" bgcolor="white"><tr>
+<td width="25%" align="center" class="selx" onclick="PF4reset()">初期値に戻す</td>
+<td width="25%" align="center" class="selx" onclick="PF4clear()">既読クリア</td>
+<td width="25%" align="center" class="selx" onclick="checker()">既読チェック</td>
+<td width="25%" align="center" class="selx" onclick="PF4off()">閉じる</td>
+</tr>
+</table>
+</td></tr></table>
+</div>
+
+<!-- EDテキストオーバーレイ用 (Step 10) -->
+<div id="ED_OVERLAY" style="top:100px;left:50px;z-index:5;visibility:hidden;color:white;font-size:24px;font-family:'MS PGothic',sans-serif;text-shadow:0 0 4px #000"></div>
+
+<!-- sys.js + schedule.js が全関数を提供。ここは初期化のみ -->
+<script>
+// --- Audio Unlock → bootup ---
+document.getElementById('AUDIO_UNLOCK').addEventListener('click', function(){
+	this.style.display='none';
+	bootup();
+});
+// --- Caddy自動停止用ping ---
+(function(){
+	var params = new URLSearchParams(window.location.search);
+	var sid = params.get("sid");
+	if (params.get("launcher") === "small") document.title = "[AQCAN_APP] アクアノートキャンパス";
+	var heartbeatMs = sid ? 1000 : 2000;
+	var closeSent = false;
+	function sendPing(eventName, keepalive) {
+		var url = "ping.txt?ts=" + Date.now();
+		if (sid) url = "ping.txt?sid=" + encodeURIComponent(sid) + "&event=" + eventName + "&ts=" + Date.now();
+		fetch(url, {cache: "no-store", keepalive: !!keepalive}).catch(function(){});
+	}
+	if (sid) sendPing("open", false);
+	setInterval(function(){
+		sendPing(sid ? "alive" : "alive", false);
+	}, heartbeatMs);
+	function sendClosePing() {
+		if (closeSent || !sid) return;
+		closeSent = true;
+		sendPing("close", true);
+	}
+	window.addEventListener("pagehide", sendClosePing, {capture: true});
+	window.addEventListener("beforeunload", sendClosePing, {capture: true});
+})();
+</script>
+</body>
+</html>

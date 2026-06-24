@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>face.swf 分割ビューア</title>
+<script src="ruffle/ruffle.js"></script>
+<style>
+body { font-family: monospace; background: #222; color: #eee; margin: 20px; }
+#viewer { display: flex; gap: 20px; align-items: flex-start; }
+#swf-container { background: #000; width: 200px; height: 200px; }
+#swf-container ruffle-embed { width: 200px; height: 200px; }
+#controls { display: flex; flex-direction: column; gap: 8px; }
+button { font-size: 14px; padding: 6px 12px; cursor: pointer; }
+#info { margin-top: 10px; color: #aaa; }
+#nav { display: flex; gap: 4px; flex-wrap: wrap; max-width: 600px; margin-top: 16px; }
+#nav button { font-size: 11px; padding: 2px 6px; min-width: 32px; }
+#nav button.empty { opacity: 0.3; }
+#nav button.current { background: #4a9; color: #000; }
+</style>
+</head>
+<body>
+<h2>face.swf 分割ビューア</h2>
+
+<div id="viewer">
+    <div id="swf-container">
+        <embed id="player" type="application/x-shockwave-flash" 
+               src="split_face/face_F001.swf" width="200" height="200">
+    </div>
+    <div id="controls">
+        <div>
+            <button onclick="prev()">◀ Prev</button>
+            <span id="label">F001</span>
+            <button onclick="next()">Next ▶</button>
+        </div>
+        <div>
+            <input type="range" id="slider" min="0" max="104" value="1" 
+                   oninput="goFrame(this.value)">
+        </div>
+        <div id="info">読込中...</div>
+    </div>
+</div>
+
+<div id="nav"></div>
+
+<script>
+// 空フレーム一覧（28Bのもの = 顔非表示）
+const EMPTY = [26,27,28,29,49,69,70,71,72,73,74,75,76,77,78,79,85,86,87,88,89,92,93,94,95,96,97,98,99,104];
+const EMPTY_SET = new Set(EMPTY);
+const TOTAL = 105;
+
+let current = 1;
+
+// フレーム番号ボタン生成
+const nav = document.getElementById('nav');
+for (let i = 0; i < TOTAL; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    btn.onclick = () => goFrame(i);
+    if (EMPTY_SET.has(i)) btn.classList.add('empty');
+    btn.id = 'btn_' + i;
+    nav.appendChild(btn);
+}
+
+function getPlayer() {
+    return document.getElementById('player');
+}
+
+async function goFrame(num) {
+    num = parseInt(num);
+    if (num < 0 || num >= TOTAL) return;
+    
+    // 前のハイライト解除
+    const prevBtn = document.getElementById('btn_' + current);
+    if (prevBtn) prevBtn.classList.remove('current');
+    
+    current = num;
+    document.getElementById('label').textContent = 'F' + String(num).padStart(3, '0');
+    document.getElementById('slider').value = num;
+    
+    // 新ハイライト
+    const curBtn = document.getElementById('btn_' + current);
+    if (curBtn) curBtn.classList.add('current');
+
+    const player = getPlayer();
+    const path = 'split_face/face_F' + String(num).padStart(3, '0') + '.swf';
+    
+    const info = document.getElementById('info');
+    if (EMPTY_SET.has(num)) {
+        info.textContent = 'F' + num + ': 空フレーム（顔非表示）';
+    } else {
+        info.textContent = '読込中: ' + path;
+    }
+
+    try {
+        await player.load(path);
+        if (!EMPTY_SET.has(num)) {
+            info.textContent = 'F' + num + ': 表示OK';
+        }
+    } catch (e) {
+        info.textContent = 'F' + num + ': エラー - ' + e;
+    }
+}
+
+function prev() {
+    let n = current - 1;
+    while (n >= 0 && EMPTY_SET.has(n)) n--;
+    if (n >= 0) goFrame(n);
+}
+
+function next() {
+    let n = current + 1;
+    while (n < TOTAL && EMPTY_SET.has(n)) n++;
+    if (n < TOTAL) goFrame(n);
+}
+
+// 初期表示
+window.addEventListener('load', () => {
+    setTimeout(() => goFrame(1), 500);
+});
+</script>
+</body>
+</html>

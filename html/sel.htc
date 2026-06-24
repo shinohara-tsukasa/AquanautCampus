@@ -1,0 +1,13 @@
+<script language="JavaScript">
+attachEvent("onmouseover",mouseover);
+attachEvent("onmouseout",mouseout);
+function mouseover()
+	{
+	this.style.backgroundColor="#00aaff";
+	}
+function mouseout()
+	{
+	this.style.backgroundColor="transparent";
+	}
+</script>
+

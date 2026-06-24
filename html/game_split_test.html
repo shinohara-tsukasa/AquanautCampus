@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>game.swf 分割テスト</title>
+<script src="ruffle/ruffle.js"></script>
+<style>
+body { font-family: monospace; background: #222; color: #eee; margin: 20px; }
+#swf-container { background: #000; width: 512px; height: 360px; }
+#swf-container ruffle-embed { width: 512px; height: 360px; }
+#controls { margin-top: 10px; }
+button { font-size: 14px; padding: 6px 12px; cursor: pointer; margin: 4px; }
+#info { margin-top: 10px; color: #aaa; white-space: pre; }
+</style>
+</head>
+<body>
+<h2>game.swf 分割SWFテスト</h2>
+
+<div id="swf-container">
+    <embed id="player" type="application/x-shockwave-flash"
+           src="split_game_test/game_F200-260.swf" width="512" height="360">
+</div>
+
+<div id="controls">
+    <button onclick="doPlay()">▶ Play</button>
+    <button onclick="doPause()">⏸ Pause</button>
+    <button onclick="doReload()">🔄 Reload</button>
+</div>
+
+<div id="info">読込中...</div>
+
+<script>
+function getPlayer() {
+    return document.getElementById('player');
+}
+
+function doPlay() {
+    const p = getPlayer();
+    p.play();
+    updateInfo();
+}
+
+function doPause() {
+    const p = getPlayer();
+    p.pause();
+    updateInfo();
+}
+
+async function doReload() {
+    const p = getPlayer();
+    await p.load('split_game_test/game_F200-260.swf');
+    updateInfo();
+}
+
+function updateInfo() {
+    const p = getPlayer();
+    try {
+        const playing = p.isPlaying;
+        const pct = p.PercentLoaded ? p.PercentLoaded() : '?';
+        const meta = p.metadata || {};
+        document.getElementById('info').textContent =
+            `isPlaying: ${playing}\n` +
+            `PercentLoaded: ${pct}\n` +
+            `metadata.numFrames: ${meta.numFrames || '?'}\n` +
+            `metadata.frameRate: ${meta.frameRate || '?'}`;
+    } catch(e) {
+        document.getElementById('info').textContent = 'Error: ' + e;
+    }
+}
+
+setInterval(updateInfo, 500);
+</script>
+</body>
+</html>
