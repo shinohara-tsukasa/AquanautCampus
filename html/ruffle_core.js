@@ -1792,7 +1792,7 @@ var drawsts=false;
 var nowface=0;
 var _playbackTimer=null;
 var _completionFired=false;
-var _skipForceStoppedFrame=null;	// ★z206: Enter個別停止から同じsetposs内のloadへ対象frameを引き渡す
+var _skipForceStoppedFrame=null;	// ★z207: Enter個別停止から同じsetposs内のloadへ対象frameを引き渡す
 var _completionSettleRaf=0;
 var _completionSettleToken=0;
 var _completionSettleCanvas=null;
@@ -1873,13 +1873,15 @@ function _initRufflePlayers()
 	bootcheck();
 	}
 
-// ★z206: Enter連打による連続load描画不能の個別対策。
-//   確認済みのF4500-F4502/F4520-F4529/F4862-F4863へ入る時、前SWFが未完走またはEnter個別停止経由なら
+// ★z207: Enter連打・pause後loadによる描画不能の個別対策。
+//   確認済みのF2040/F2050/F2190/F4500-F4502/F4520-F4529/F4862-F4863へ入る時、前SWFが未完走またはEnter個別停止経由なら
 //   壊れた連続load状態を引き継がないようgame用Ruffle playerだけを新品へ交換する。他フレームでは呼ばれない。
-var Z206_RECREATE_ON_BUSY_FRAMES={
-	4500:true,4501:true,4502:true,4520:true,4521:true,4522:true,4523:true,4524:true,
+var Z207_RECREATE_ON_BUSY_FRAMES={
+	2040:true,2050:true,2190:true,4500:true,4501:true,4502:true,4520:true,4521:true,4522:true,4523:true,4524:true,
 	4525:true,4526:true,4527:true,4528:true,4529:true,4862:true,4863:true
 	};
+// #V F2050は完走後にpauseされ、直後のF2190もその停止状態を引き継ぐため、この2本は操作方法に関係なく交換する。
+var Z207_ALWAYS_RECREATE_FRAMES={2050:true,2190:true};
 function _recreateGamePlayerForBusyFrame(frameNum,file)
 	{
 	var oldPlayer=FLASH_PLAYER;
@@ -1899,14 +1901,14 @@ function _recreateGamePlayerForBusyFrame(frameNum,file)
 		try{if (oldPlayer._pbObserver) oldPlayer._pbObserver.disconnect();}catch(e){}
 		try{oldPlayer.pause();}catch(e){}
 		if (oldPlayer.parentNode) oldPlayer.parentNode.removeChild(oldPlayer);
-		_dbg("z206: recreated game player for busy Enter transition F"+frameNum+" → "+file);
+		_dbg("z207: recreated game player for guarded transition F"+frameNum+" → "+file);
 		return true;
 		}
 	catch(e)
 		{
 		if (newPlayer && newPlayer.parentNode) newPlayer.parentNode.removeChild(newPlayer);
 		FLASH_PLAYER=oldPlayer;
-		_dbg("z206: player recreation failed F"+frameNum+":",e);
+		_dbg("z207: player recreation failed F"+frameNum+":",e);
 		return false;
 		}
 	}
@@ -2300,7 +2302,7 @@ var CLEAR_FREEZE_ON_NOCHAR_FRAMES={
 function _loadGameSWF(file,frameCount,sameChar)
 	{
 	var nextFrameNum=typeof nowgrp!=="undefined"?nowgrp:null;
-	var _z206ForcedEnter=(_skipForceStoppedFrame===nextFrameNum);
+	var _z207ForcedEnter=(_skipForceStoppedFrame===nextFrameNum);
 	_skipForceStoppedFrame=null;
 	_pendingStaticBgToken++;
 	_clearSaveTransitionPrecover();
@@ -2444,14 +2446,15 @@ function _loadGameSWF(file,frameCount,sameChar)
 		}
 	if (hideFlashDuringLoad) _hideFlashPlayerVisualOnly();
 
-	// ★z206: 対象カットは未完走時に加え、Enter個別停止経由なら誤った完走判定後でもplayerを新品へ交換する。
+	// ★z207: 対象カットは未完走時・Enter個別停止経由・#V後pause引継ぎ対象ならplayerを新品へ交換する。
 	//   同じplayerへの連続loadが描画不能状態を引き継ぐ実測があるため。対象外は従来のz171経路を一切変えない。
-	var _z206Recreated=false;
-	if (Z206_RECREATE_ON_BUSY_FRAMES[nextFrameNum] && (!_prevCharCompleted || _z206ForcedEnter))
-		_z206Recreated=_recreateGamePlayerForBusyFrame(nextFrameNum,file);
+	var _z207Recreated=false;
+	if (Z207_RECREATE_ON_BUSY_FRAMES[nextFrameNum]
+		&& (!_prevCharCompleted || _z207ForcedEnter || Z207_ALWAYS_RECREATE_FRAMES[nextFrameNum]))
+		_z207Recreated=_recreateGamePlayerForBusyFrame(nextFrameNum,file);
 	// ★z171: 前charが再生途中(未完走)でpause→新char load(autoplay)するとRuffleが新charをframe0停止させる(flg63 ED18/20の黒)。
 	//   前charが完走済みのときだけpause(従来=明滅防止)。再生途中ならpauseせずにload(autoplay)で再生中playerを置き換える。
-	if (!_z206Recreated)
+	if (!_z207Recreated)
 		{
 		if (_prevCharCompleted) try{FLASH_PLAYER.pause();}catch(e){}
 		else _dbg("z171: skip pause (prev char still playing) →",file);
@@ -3054,7 +3057,7 @@ var _currentCharId=null; // 現在表示中のchar_id
 //     出なければ#V等でskip=false化済み＝手前のskip=trueフレームに要調整。
 var SKIP_FORCE_STOP_FRAMES={
 	2040:true,7470:true,7540:true,7590:true,
-	// ★z206: 確認済みの対象カットだけEnter連続decodeを1カットずつ止め、Ruffleへの連続loadを局所的に防ぐ。
+	// ★z207: 確認済みの対象カットだけEnter連続decodeを1カットずつ止め、Ruffleへの連続loadを局所的に防ぐ。
 	4500:true,4501:true,4502:true,4520:true,4521:true,4522:true,4523:true,4524:true,
 	4525:true,4526:true,4527:true,4528:true,4529:true,4862:true,4863:true
 	};
