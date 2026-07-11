@@ -1872,6 +1872,44 @@ function _initRufflePlayers()
 	bootcheck();
 	}
 
+// ★z204: 8/7昼・崖回想のEnter連打対策（個別注入）。
+//   F4502/F4520-4529へ入る時に前SWFが未完走なら、壊れた連続load状態を引き継がないよう
+//   game用Ruffle playerだけを新品へ交換する。他フレーム・完走後の通常遷移では呼ばれない。
+var Z204_RECREATE_ON_BUSY_FRAMES={
+	4502:true,4520:true,4521:true,4522:true,4523:true,4524:true,
+	4525:true,4526:true,4527:true,4528:true,4529:true
+	};
+function _recreateGamePlayerForBusyFrame(frameNum,file)
+	{
+	var oldPlayer=FLASH_PLAYER;
+	var mainDiv=document.getElementById("MAINW");
+	var newest,newPlayer;
+	if (!oldPlayer || !mainDiv || !window.RufflePlayer) return false;
+	try{
+		newest=window.RufflePlayer.newest();
+		newPlayer=newest.createPlayer();
+		newPlayer.style.cssText=oldPlayer.style.cssText;
+		newPlayer.style.display="";
+		newPlayer.style.visibility="visible";
+		newPlayer.style.opacity="1";
+		mainDiv.appendChild(newPlayer);
+		FLASH_PLAYER=newPlayer;
+		_injectPlayButtonHide(newPlayer);
+		try{if (oldPlayer._pbObserver) oldPlayer._pbObserver.disconnect();}catch(e){}
+		try{oldPlayer.pause();}catch(e){}
+		if (oldPlayer.parentNode) oldPlayer.parentNode.removeChild(oldPlayer);
+		_dbg("z204: recreated game player for busy Enter transition F"+frameNum+" → "+file);
+		return true;
+		}
+	catch(e)
+		{
+		if (newPlayer && newPlayer.parentNode) newPlayer.parentNode.removeChild(newPlayer);
+		FLASH_PLAYER=oldPlayer;
+		_dbg("z204: player recreation failed F"+frameNum+":",e);
+		return false;
+		}
+	}
+
 function bootcheck()
 	{
 	// Ruffle player準備完了 → BG_LAYER初期化 → JPEGプリロード → bootstep
@@ -2402,10 +2440,18 @@ function _loadGameSWF(file,frameCount,sameChar)
 		}
 	if (hideFlashDuringLoad) _hideFlashPlayerVisualOnly();
 
+	// ★z204: 8/7昼の崖回想だけ、Enter連打で前SWFが未完走ならRuffle playerを新品へ交換する。
+	//   同じplayerへの連続loadが描画不能状態を引き継ぐ実測があるため。対象外は従来のz171経路を一切変えない。
+	var _z204Recreated=false;
+	if (!_prevCharCompleted && Z204_RECREATE_ON_BUSY_FRAMES[nextFrameNum])
+		_z204Recreated=_recreateGamePlayerForBusyFrame(nextFrameNum,file);
 	// ★z171: 前charが再生途中(未完走)でpause→新char load(autoplay)するとRuffleが新charをframe0停止させる(flg63 ED18/20の黒)。
 	//   前charが完走済みのときだけpause(従来=明滅防止)。再生途中ならpauseせずにload(autoplay)で再生中playerを置き換える。
-	if (_prevCharCompleted) try{FLASH_PLAYER.pause();}catch(e){}
-	else _dbg("z171: skip pause (prev char still playing) →",file);
+	if (!_z204Recreated)
+		{
+		if (_prevCharCompleted) try{FLASH_PLAYER.pause();}catch(e){}
+		else _dbg("z171: skip pause (prev char still playing) →",file);
+		}
 	_clearFlashCanvas();
 
 	var fullUrl=SWF_GAME_DIR+file+"?cb="+Date.now();	// ★切り分け用キャッシュバスター（検証後に戻す）
@@ -3002,7 +3048,12 @@ var _currentCharId=null; // 現在表示中のchar_id
 //     アニメが再生されない(z103のplay()でも復帰せず=pause引きずりでない深い停止)。白シーンをskip=false(クリック相当)で
 //     通せばFLASHは壊れない(z101で船が出たのと同根)。→白シーンのフレームをskip強制解除。発火(skip force-stopログ)が
 //     出なければ#V等でskip=false化済み＝手前のskip=trueフレームに要調整。
-var SKIP_FORCE_STOP_FRAMES={2040:true,7470:true,7540:true,7590:true};
+var SKIP_FORCE_STOP_FRAMES={
+	2040:true,7470:true,7540:true,7590:true,
+	// ★z204: 8/7昼の崖回想だけはEnter連続decodeを1カットずつ止め、Ruffleへの連続loadを局所的に防ぐ。
+	4502:true,4520:true,4521:true,4522:true,4523:true,4524:true,
+	4525:true,4526:true,4527:true,4528:true,4529:true
+	};
 
 // ============================================================
 // F0-199 背景JPEGプレビュー（問題D対策: 案A）
